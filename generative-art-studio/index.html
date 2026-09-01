@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative Art Studio — Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.min.js"></script>
+</head>
+<body>
+    <canvas id="artCanvas"></canvas>
+    <canvas id="portraitCanvas" style="display:none;"></canvas>
+
+    <button id="togglePanel" class="toggle-btn" title="Mostrar/Ocultar panel">⚙</button>
+
+    <div id="controls" class="controls-panel">
+        <h2>Generative Art Studio <span class="badge">PRO</span></h2>
+
+        <!-- MODO -->
+        <div class="control-group">
+            <label for="modeSelect">Modo Generativo</label>
+            <select id="modeSelect">
+                <option value="flowField">🌊 Flow Field</option>
+                <option value="reactiveParticles">✨ Partículas Reactivas</option>
+                <option value="fractalTree">🌳 Árbol Fractal</option>
+                <option value="constellation">⭐ Constelación</option>
+                <option value="waves">〰️ Ondas Perlin</option>
+                <option value="kaleidoscope">🔮 Caleidoscopio</option>
+                <option value="orbits">🪐 Órbitas</option>
+                <option value="portrait">🖼️ Retrato / Pop Art</option>
+            </select>
+        </div>
+
+        <!-- RETRATO: solo visible en modo portrait -->
+        <div id="portraitControls" class="portrait-section hidden">
+            <div class="control-group">
+                <label>📸 Cargar retrato</label>
+                <input type="file" id="imageUpload" accept="image/*" class="file-input">
+                <div class="hint">O elige uno famoso:</div>
+                <div class="preset-grid" id="presetGrid">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Mona_Lisa.jpg/200px-Mona_Lisa.jpg" data-preset="mona" title="Mona Lisa" crossorigin="anonymous">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Meisje_met_de_parel.jpg/200px-Meisje_met_de_parel.jpg" data-preset="pearl" title="La joven de la perla" crossorigin="anonymous">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg/200px-The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg" data-preset="kiss" title="El Beso - Klimt" crossorigin="anonymous">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg" data-preset="starry" title="Noche estrellada" crossorigin="anonymous">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg/200px-Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg" data-preset="frida" title="Frida Kahlo" crossorigin="anonymous">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Einstein_1921_by_F_Schmutzer_-_restoration.jpg/200px-Einstein_1921_by_F_Schmutzer_-_restoration.jpg" data-preset="einstein" title="Einstein" crossorigin="anonymous">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="portraitEffect">Efecto retrato</label>
+                <select id="portraitEffect">
+                    <option value="particles">Partículas muestreadas</option>
+                    <option value="popart">Pop Art (Warhol x4)</option>
+                    <option value="ascii">ASCII / Puntillismo</option>
+                    <option value="halftone">Halftone + Ondas</option>
+                    <option value="pixel">Pixel Sorting Liquify</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="portraitIntensity">Intensidad efecto: <span id="portraitIntensityValue">50</span></label>
+                <input type="range" id="portraitIntensity" min="1" max="100" value="50">
+            </div>
+        </div>
+
+        <!-- CONTROLES COMUNES -->
+        <div class="control-group">
+            <label for="speedSlider">Velocidad: <span id="speedValue">50</span></label>
+            <input type="range" id="speedSlider" min="1" max="100" value="50">
+        </div>
+
+        <div class="control-group">
+            <label for="particleSlider">Cantidad: <span id="particleValue">200</span></label>
+            <input type="range" id="particleSlider" min="10" max="2000" value="200" step="10">
+        </div>
+
+        <div class="control-group slider-row">
+            <div>
+                <label for="sizeSlider">Tamaño: <span id="sizeValue">2.0</span></label>
+                <input type="range" id="sizeSlider" min="0.5" max="12" value="2" step="0.5">
+            </div>
+            <div>
+                <label for="trailSlider">Estela: <span id="trailValue">15</span></label>
+                <input type="range" id="trailSlider" min="0" max="100" value="15">
+            </div>
+        </div>
+
+        <div class="control-group" id="depthGroup">
+            <label for="depthSlider">Profundidad (Fractal): <span id="depthValue">8</span></label>
+            <input type="range" id="depthSlider" min="2" max="14" value="8">
+        </div>
+
+        <div class="control-group" id="kaleidoGroup" style="display:none;">
+            <label for="kaleidoSlider">Segmentos: <span id="kaleidoValue">6</span></label>
+            <input type="range" id="kaleidoSlider" min="3" max="16" value="6">
+        </div>
+
+        <div class="control-group">
+            <label for="connectSlider">Conexión (Constelación/Órbitas): <span id="connectValue">120</span></label>
+            <input type="range" id="connectSlider" min="20" max="300" value="120">
+        </div>
+
+        <!-- COLORES -->
+        <div class="control-group">
+            <label for="paletteSelect">Paleta de Colores</label>
+            <select id="paletteSelect">
+                <option value="aurora">🌌 Aurora</option>
+                <option value="sunset">🌅 Atardecer</option>
+                <option value="ocean">🌊 Océano</option>
+                <option value="neon">💡 Neón</option>
+                <option value="monochrome">⚪ Monocromático</option>
+                <option value="tropical">🌴 Tropical</option>
+                <option value="cyberpunk">🤖 Cyberpunk</option>
+                <option value="pastel">🍡 Pastel</option>
+                <option value="inferno">🔥 Infierno</option>
+                <option value="forest">🌲 Bosque</option>
+                <option value="candy">🍬 Candy</option>
+                <option value="nord">❄️ Nord</option>
+                <option value="rainbow">🌈 Arcoíris Animado</option>
+                <option value="custom">🎨 Personalizado...</option>
+            </select>
+        </div>
+
+        <div id="customColors" class="custom-colors hidden">
+            <div class="color-row">
+                <input type="color" id="customColor1" value="#6366f1" title="Color 1">
+                <input type="color" id="customColor2" value="#06b6d4" title="Color 2">
+                <input type="color" id="customColor3" value="#f43f5e" title="Color 3">
+                <input type="color" id="customColor4" value="#22d3ee" title="Color 4">
+                <input type="color" id="customColor5" value="#f59e0b" title="Color 5">
+            </div>
+            <div class="color-row">
+                <label>Fondo: <input type="color" id="bgColor" value="#0a0a0f"></label>
+                <label><input type="checkbox" id="rainbowAnimate" checked> Arcoíris rotatorio</label>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="blendSelect">Modo fusión</label>
+            <select id="blendSelect">
+                <option value="source-over">Normal</option>
+                <option value="lighter">Aclarar (glow)</option>
+                <option value="screen">Pantalla</option>
+                <option value="overlay">Superponer</option>
+            </select>
+        </div>
+
+        <div class="control-group button-group">
+            <button id="randomBtn" class="action-btn">🎲 Aleatorio</button>
+            <button id="clearBtn" class="action-btn secondary">🧹 Limpiar</button>
+        </div>
+
+        <div class="control-group export-group">
+            <div class="export-row">
+                <button id="saveBtn" class="action-btn export">💾 PNG</button>
+                <button id="saveJpgBtn" class="action-btn export">🖼️ JPG</button>
+            </div>
+            <div class="export-row">
+                <button id="recordGifBtn" class="action-btn gif">🎬 GIF 3s</button>
+                <button id="recordVideoBtn" class="action-btn video">⏺ VIDEO 5s</button>
+            </div>
+            <div id="recordStatus" class="record-status"></div>
+        </div>
+
+        <div class="footer-hint">Tip: mueve el ratón / toca la pantalla para interactuar · Doble click para estallar partículas</div>
+    </div>
+
+    <div id="gifProgress" class="gif-progress hidden">
+        <div class="progress-bar"><div id="gifProgressFill"></div></div>
+        <span id="gifProgressText">Generando GIF...</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
