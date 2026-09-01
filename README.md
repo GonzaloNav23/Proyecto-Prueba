@@ -6,7 +6,7 @@ Calculadora sencilla y visual hecha con HTML, CSS y JavaScript.
 
 Puedes ver la calculadora funcionando aquí:
 
-**https://gonzal0nav23.github.io/Proyecto-Prueba/**
+**https://gonzalonav23.github.io/Proyecto-Prueba/**
 
 ## ✨ Características
 
